@@ -12,6 +12,15 @@ trait MySet[A] extends (A => Boolean) {
   def flatMap[B](f: A=>MySet[B]): MySet[B]
   def filter(condition: A=>Boolean): MySet[A]
   def foreach(f: A=>Unit): Unit
+  def -(a: A): MySet[A]
+  def &(b: MySet[A]): MySet[A]
+  def --(b: MySet[A]): MySet[A]
+
+  /**
+   * Remove
+   * Intersection
+   * Difference
+   */
 }
 
 class EmptySet[A] extends MySet[A] {
@@ -23,6 +32,9 @@ class EmptySet[A] extends MySet[A] {
   def flatMap[B](f: A=>MySet[B]): MySet[B] = new EmptySet[B]
   def filter(condition: A=>Boolean): MySet[A] = this
   def foreach(f: A=>Unit): Unit = ()
+  def -(a: A): MySet[A] = this
+  def &(b: MySet[A]): MySet[A] = this
+  def --(b: MySet[A]): MySet[A] = this
 }
 
 class NonEmptySet[A](head: A, tail: MySet[A]) extends MySet[A] {
@@ -47,6 +59,19 @@ class NonEmptySet[A](head: A, tail: MySet[A]) extends MySet[A] {
     f(head)
     tail foreach f
   }
+  def -(a: A): MySet[A] = {
+    if (a == head) tail
+    else (tail - a) + head
+  }
+  def &(b: MySet[A]): MySet[A] = {
+    if (b contains head) tail & b + head
+    else tail & b
+  }
+  def --(b: MySet[A]): MySet[A] = {
+    if (b contains head) tail -- b
+    else (tail -- b) + head
+  }
+
 }
 
 // Companion object to create MySets!
@@ -66,4 +91,6 @@ object MySet {
 object Playground extends App {
   val s = MySet(1,2,3,4,4,5)
   s foreach println
+  s - 4 foreach println
+
 }
