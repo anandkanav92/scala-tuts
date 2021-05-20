@@ -20,10 +20,16 @@ object Recursion extends App {
       if (n<=1) accum else factHelper(n-1, accum*n)  // TAIL RECURSION
     factHelper(a, 1)
   }
+
   println(factorialTailRecursive(5))
   // println(factorialTailRecursive(50000)) // This works now.
-
   // ALWAYS TRY TO MAKE RECURSIVE FUNCTIONS TAIL RECURSIVE
+
+  // You could also rewrite the above with default value for accumulator
+  // making the nested function unnecessary :)
+  @tailrec
+  def factHelper(n: Int, accum: BigInt = 1): BigInt =
+    if (n<=1) accum else factHelper(n-1, accum*n)  // TAIL RECURSION
 
   // Tail recursive fibbonacci function
   def fibbo(n: Int): Int  = {
@@ -37,5 +43,6 @@ object Recursion extends App {
   // You'll need to use this accumulator pattern
   // Number of accumulators = number of recursive calls.
 
-  println(fibbo(4))
+  println(fibbo(n=4)) // You can also send value to a function with the name
+  // (and send arguments out of order like in python)
 }
