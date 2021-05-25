@@ -15,7 +15,7 @@ abstract class MyList[+A] {
 }
 
 // Empty is the default list for any type so it should specify the type as Nothing
-object EmptyList extends MyList[Nothing] {
+case object EmptyList extends MyList[Nothing] {
   override def isEmpty: Boolean = true
   override def getElements: String = "$"
   override def head = throw new NoSuchElementException
@@ -33,7 +33,7 @@ object EmptyList extends MyList[Nothing] {
 
 // +A makes it covariant
 
-class Cons[+A](h: A, t: MyList[A]) extends MyList[A] {
+case class Cons[+A](h: A, t: MyList[A]) extends MyList[A] {
   override def head: A = h
   override def tail: MyList[A] = t
   override def isEmpty: Boolean = false
@@ -64,6 +64,7 @@ trait MyTransformer[-A, B] {
 
 object ListTest extends App {
   val list : MyList[Int] = new Cons(1, new Cons(2, new Cons(3, EmptyList)))
+  val listClone : MyList[Int] = new Cons(1, new Cons(2, new Cons(3, EmptyList)))
   println( list toString )
   val myListInt: MyList[Int] = EmptyList
   val myListString: MyList[String] = EmptyList
@@ -79,5 +80,7 @@ object ListTest extends App {
   println(list.flatMap(new MyTransformer[Int, MyList[Int]] {
     override def transform(a: Int): MyList[Int] = new Cons(a, new Cons(a+1, EmptyList))
   }) toString)
+
+  println (list == listClone) // true (because "case" implements hashcode and equals properly)
 }
 
