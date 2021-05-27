@@ -7,9 +7,9 @@ abstract class MyList[+A] {
   def isEmpty : Boolean
   def add[B >: A](i: B) : MyList[B] // means b is a superset of A
   def getElements : String
-  def map[B](p: MyTransformer[A,B]): MyList[B]
-  def filter(p: MyPredicate[A]): MyList[A]
-  def flatMap[B](p: MyTransformer[A, MyList[B]]): MyList[B]
+  def map[B](p: A => B): MyList[B]
+  def filter(p: A => Boolean): MyList[A]
+  def flatMap[B](p: A => MyList[B]): MyList[B]
   def ++[B >: A](l: MyList[B]): MyList[B]
   override def toString : String = s"[ $getElements ]"
 }
@@ -22,13 +22,13 @@ case object EmptyList extends MyList[Nothing] {
   override def tail = throw new NoSuchElementException
   override def add[A >: Nothing](i: A): MyList[A] = new Cons(i, EmptyList)
 
-  override def map[B](p: MyTransformer[Nothing, B]): MyList[B] = this
-
-  override def filter(p: MyPredicate[Nothing]): MyList[Nothing] = this
-
-  override def flatMap[B](p: MyTransformer[Nothing, MyList[B]]): MyList[B] = this
-
   override def ++[B >: Nothing](l: MyList[B]): MyList[B] = l
+
+  override def map[B](p: Nothing => B): MyList[B] = this
+
+  override def filter(p: Nothing => Boolean): MyList[Nothing] = this
+
+  override def flatMap[B](p: Nothing => MyList[B]): MyList[B] = this
 }
 
 // +A makes it covariant
@@ -40,16 +40,16 @@ case class Cons[+A](h: A, t: MyList[A]) extends MyList[A] {
   override def getElements: String = s"$head, ${tail getElements}"
   override def add[B >: A](i: B): MyList[B] = new Cons(i, this) // this says B is a superclass of A
 
-  override def map[B](p: MyTransformer[A, B]): MyList[B] = new Cons(p.transform(head), tail.map(p))
+  override def map[B](p: A => B): MyList[B] = new Cons(p(head), tail.map(p))
 
-  override def filter(p: MyPredicate[A]): MyList[A] =
-    if (p.test(head))
+  override def filter(p: A => Boolean): MyList[A] =
+    if (p(head))
       new Cons(head, t.filter(p))
     else
       t.filter(p)
 
-  override def flatMap[B](p: MyTransformer[A, MyList[B]]): MyList[B] =
-    p.transform(head) ++ tail.flatMap(p)
+  override def flatMap[B](p: A => MyList[B]): MyList[B] =
+    p(head) ++ tail.flatMap(p)
 
   override def ++[B >: A](l: MyList[B]): MyList[B] = new Cons(head, tail ++ l) // Magic concatenation
 }
@@ -69,17 +69,12 @@ object ListTest extends App {
   val myListInt: MyList[Int] = EmptyList
   val myListString: MyList[String] = EmptyList
 
-  println(list.map(new MyTransformer[Int, Int] {
-    override def transform(a: Int): Int = a * 2
-  }) toString)
+  println(list.map(_ * 2) toString)
 
-  println(list.filter(new MyPredicate[Int] {
-    override def test(t: Int): Boolean = t % 2 == 0
-  }) toString)
+  println(list.filter(_ % 2 == 0) toString)
 
-  println(list.flatMap(new MyTransformer[Int, MyList[Int]] {
-    override def transform(a: Int): MyList[Int] = new Cons(a, new Cons(a+1, EmptyList))
-  }) toString)
+  println(list.flatMap((a: Int) => new Cons(a, new Cons(a + 1, EmptyList))) toString)
+  // can't use underscore multiple times here (because it means a different argument each time)
 
   println (list == listClone) // true (because "case" implements hashcode and equals properly)
 }
