@@ -1,6 +1,4 @@
-package learn.scala.oops
-
-import scala.annotation.tailrec
+package learn.scala.collection
 
 // Singly linked list
 abstract class MyList[+A] {
@@ -111,6 +109,7 @@ trait MyTransformer[-A, B] {
 }
 
 
+
 object ListTest extends App {
   val list : MyList[Int] = new Cons(1, new Cons(2, new Cons(3, EmptyList)))
   val listClone : MyList[Int] = new Cons(1, new Cons(2, new Cons(3, EmptyList)))
@@ -135,5 +134,11 @@ object ListTest extends App {
   println(list.zipWith(listClone, (a: Int, b: Int) => a * b))
 
   println(list.fold(0)(_ + _))
+
+  for {
+    l <- list
+  } println(l)
+
+  // MyList supports for comprehensions because it implements Map, FlatMap and Filter
 }
 
